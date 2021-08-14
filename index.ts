@@ -27,12 +27,16 @@ const generateSpec = (commands: any): Fig.Spec => {
     }
     for (const command of commands.commands) {
         const subcommand: Fig.Subcommand = attachSubcommand(completionSpec, command.name);
-        subcommand.options = command.options.map((option: any) => {
-            const args: Fig.Arg | undefined = option.type === 'string' ? { name: option.spec.value } : undefined;
-            const names = [`--${option.name}`].concat(option.aliases.map((alias: string) => `-${alias}`));
-            return ({ name: names, description: option.summary, args: args })
-        })
-        subcommand.args = command.inputs.map((input: any) => ({ name: input.name, description: input.summary, isOptional: !input.required }));
+        if (command.options && command.options.length > 0) {
+            subcommand.options = command.options.map((option: any) => {
+                const args: Fig.Arg | undefined = option.type === 'string' ? { name: option.spec.value } : undefined;
+                const names = [`--${option.name}`].concat(option.aliases.map((alias: string) => `-${alias}`));
+                return ({ name: names, description: option.summary, args: args })
+            })
+        }
+        if (command.inputs && command.inputs.length > 0)
+            subcommand.args = command.inputs.map((input: any) => ({ name: input.name, description: input.summary, isOptional: !input.required }));
+        subcommand.description = command.summary;
     }
     fs.writeFileSync('out/spec.json', JSON.stringify(completionSpec));
     return completionSpec;

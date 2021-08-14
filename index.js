@@ -87,12 +87,16 @@ var generateSpec = function (commands) {
     for (var _i = 0, _a = commands.commands; _i < _a.length; _i++) {
         var command = _a[_i];
         var subcommand = attachSubcommand(completionSpec, command.name);
-        subcommand.options = command.options.map(function (option) {
-            var args = option.type === 'string' ? { name: option.spec.value } : undefined;
-            var names = ["--" + option.name].concat(option.aliases.map(function (alias) { return "-" + alias; }));
-            return ({ name: names, description: option.summary, args: args });
-        });
-        subcommand.args = command.inputs.map(function (input) { return ({ name: input.name, description: input.summary, isOptional: !input.required }); });
+        if (command.options && command.options.length > 0) {
+            subcommand.options = command.options.map(function (option) {
+                var args = option.type === 'string' ? { name: option.spec.value } : undefined;
+                var names = ["--" + option.name].concat(option.aliases.map(function (alias) { return "-" + alias; }));
+                return ({ name: names, description: option.summary, args: args });
+            });
+        }
+        if (command.inputs && command.inputs.length > 0)
+            subcommand.args = command.inputs.map(function (input) { return ({ name: input.name, description: input.summary, isOptional: !input.required }); });
+        subcommand.description = command.summary;
     }
     fs.writeFileSync('out/spec.json', JSON.stringify(completionSpec));
     return completionSpec;
