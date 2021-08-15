@@ -4,6 +4,8 @@ import { promisify } from "util";
 
 const exec = promisify(originalExec);
 
+// TODO for some reason, the options that start start with --no- are missing the no
+// ie. ionic serve is generated with the options --open and --livereload, where it should be --no-open, --no-livereload
 const generateCommands = async () => {
     const { stdout } = await exec('yarn ionic help --json');
     const sanitizedOutput = stdout.split("\n")[1];
