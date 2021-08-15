@@ -4,7 +4,7 @@ import { promisify } from "util";
 
 const exec = promisify(originalExec);
 
-// TODO for some reason, the options that start start with --no- are missing the no
+// TODO the ionic cli help command is missing 'no-' on some options. I've submitted a PR https://github.com/ionic-team/ionic-cli/pull/4748
 // ie. ionic serve is generated with the options --open and --livereload, where it should be --no-open, --no-livereload
 const generateCommands = async () => {
     const { stdout } = await exec('yarn ionic help --json');
