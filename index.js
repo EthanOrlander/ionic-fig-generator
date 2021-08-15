@@ -59,7 +59,19 @@ var fs = __importStar(require("fs"));
 var child_process_1 = require("child_process");
 var util_1 = require("util");
 var exec = util_1.promisify(child_process_1.exec);
-var generateCommands = function () { return exec('yarn ionic help --json'); };
+var generateCommands = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var stdout, sanitizedOutput, help;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, exec('yarn ionic help --json')];
+            case 1:
+                stdout = (_a.sent()).stdout;
+                sanitizedOutput = stdout.split("\n")[1];
+                help = JSON.parse(sanitizedOutput);
+                return [2 /*return*/, help.commands];
+        }
+    });
+}); };
 var attachSubcommand = function (completionSpec, commandStr) {
     var commandPieces = commandStr.split(" ").slice(1);
     var last = completionSpec;
@@ -84,33 +96,31 @@ var generateSpec = function (commands) {
         description: 'The Ionic command-line interface (CLI) is the go-to tool for developing Ionic apps.',
         subcommands: []
     };
-    for (var _i = 0, _a = commands.commands; _i < _a.length; _i++) {
-        var command = _a[_i];
+    for (var _i = 0, commands_1 = commands; _i < commands_1.length; _i++) {
+        var command = commands_1[_i];
         var subcommand = attachSubcommand(completionSpec, command.name);
         if (command.options && command.options.length > 0) {
             subcommand.options = command.options.map(function (option) {
                 var args = option.type === 'string' ? { name: option.spec.value } : undefined;
                 var names = ["--" + option.name].concat(option.aliases.map(function (alias) { return "-" + alias; }));
-                return ({ name: names, description: option.summary, args: args });
+                return { name: names, description: option.summary, args: args };
             });
         }
         if (command.inputs && command.inputs.length > 0)
             subcommand.args = command.inputs.map(function (input) { return ({ name: input.name, description: input.summary, isOptional: !input.required }); });
         subcommand.description = command.summary;
     }
-    fs.writeFileSync('out/spec.json', JSON.stringify(completionSpec));
     return completionSpec;
 };
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var stdout, sanitizedOutput, commands;
+    var commands, spec;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, generateCommands()];
             case 1:
-                stdout = (_a.sent()).stdout;
-                sanitizedOutput = stdout.split("\n")[1];
-                commands = JSON.parse(sanitizedOutput);
-                generateSpec(commands);
+                commands = _a.sent();
+                spec = generateSpec(commands);
+                fs.writeFileSync('out/spec.json', JSON.stringify(spec));
                 console.log("Fig autocomplete spec generated successfully!");
                 return [2 /*return*/];
         }
